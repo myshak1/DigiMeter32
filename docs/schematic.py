@@ -469,4 +469,21 @@ with schemdraw.Drawing(show=False) as d:
         pass
 
     d.save(f"{OUT}.{FMT}")
+
+# białe tło (przezroczyste wygląda na GitHubie w trybie ciemnym jak czarne)
+if FMT == "png":
+    from PIL import Image
+    im = Image.open(f"{OUT}.png").convert("RGBA")
+    bg = Image.new("RGBA", im.size, (255, 255, 255, 255))
+    Image.alpha_composite(bg, im).convert("RGB").save(f"{OUT}.png", optimize=True)
+elif FMT == "svg":
+    import re
+    with open(f"{OUT}.svg", encoding="utf-8") as f:
+        svg = f.read()
+    vb = re.search(r'viewBox="([-\d.]+) ([-\d.]+) ([-\d.]+) ([-\d.]+)"', svg)
+    x, y, w, h = vb.groups()
+    rect = f'<rect x="{x}" y="{y}" width="{w}" height="{h}" fill="white"/>'
+    svg = svg.replace(vb.group(0) + ">", vb.group(0) + ">" + rect, 1)
+    with open(f"{OUT}.svg", "w", encoding="utf-8") as f:
+        f.write(svg)
 print("saved", OUT, FMT)
