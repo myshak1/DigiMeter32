@@ -1,0 +1,197 @@
+menu "DigiMeter32"
+
+    menu "Wyswietlacz LCD"
+
+        choice DM32_LCD_DRIVER
+            prompt "Sterownik LCD"
+            default DM32_LCD_ILI9488
+            help
+                Wybierz kontroler wyswietlacza. Jesli obraz jest
+                "zaszumiony" albo przesuniety, sprobuj innej opcji.
+
+            config DM32_LCD_ILI9488
+                bool "ILI9488 (SPI, kolor 18-bit)"
+            config DM32_LCD_ILI9486
+                bool "ILI9486 (SPI, kolor 18-bit)"
+            config DM32_LCD_ILI9486_RPI
+                bool "ILI9486 typu RPi (rejestr 16-bit, np. Waveshare 4inch RPi LCD (A))"
+            config DM32_LCD_ST7796
+                bool "ST7796S (SPI, kolor 16-bit)"
+        endchoice
+
+        config DM32_LCD_SPI_MHZ
+            int "Zegar SPI [MHz]"
+            range 1 80
+            default 40
+            help
+                40 MHz dziala z wiekszoscia modulow przy krotkich
+                przewodach. Przy bledach obrazu zmniejsz do 20-26 MHz.
+
+        config DM32_LCD_PIN_SCLK
+            int "GPIO SCLK"
+            default 18 if IDF_TARGET_ESP32
+            default 21
+        config DM32_LCD_PIN_MOSI
+            int "GPIO MOSI (SDI)"
+            default 23 if IDF_TARGET_ESP32
+            default 19
+        config DM32_LCD_PIN_CS
+            int "GPIO CS"
+            default 5 if IDF_TARGET_ESP32
+            default 18
+        config DM32_LCD_PIN_DC
+            int "GPIO DC (RS)"
+            default 33 if IDF_TARGET_ESP32
+            default 22
+        config DM32_LCD_PIN_RST
+            int "GPIO RESET (-1 = brak)"
+            range -1 48
+            default 4 if IDF_TARGET_ESP32
+            default 23
+        config DM32_LCD_PIN_BL
+            int "GPIO podswietlenia LED/BL (-1 = na stale)"
+            range -1 48
+            default -1
+            help
+                -1 (domyslnie): pin LED modulu podlaczony na stale do 3,3 V,
+                bez regulacji jasnosci. Podaj numer GPIO, jesli chcesz
+                sterowac jasnoscia (pin LED przez tranzystor albo wprost,
+                gdy pobiera ponizej ok. 15 mA).
+        config DM32_LCD_BL_ACTIVE_HIGH
+            bool "Podswietlenie aktywne stanem wysokim"
+            default y
+            depends on DM32_LCD_PIN_BL >= 0
+            help
+                Wylacz, gdy podswietlenie jest sterowane tranzystorem PNP
+                od strony zasilania (GPIO w stanie niskim = swieci).
+
+        config DM32_LCD_FLIP
+            bool "Obroc obraz o 180 stopni"
+            default n
+        config DM32_LCD_BGR
+            bool "Kolejnosc kolorow BGR (wylacz, gdy czerwony i niebieski sa zamienione)"
+            default y
+        config DM32_LCD_INVERT
+            bool "Inwersja kolorow (wlacz, gdy obraz jest jak negatyw)"
+            default n
+    endmenu
+
+    menu "Pomiar"
+
+        choice DM32_ADC_DEFAULT
+            prompt "Domyslne zrodlo pomiaru"
+            default DM32_ADC_DEFAULT_ADS
+            help
+                Ustawienie fabryczne (pozniej mozna zmienic poleceniem
+                "set adc" w konsoli).
+
+            config DM32_ADC_DEFAULT_ADS
+                bool "Tylko ADS1115 (bez ADS na ekranie komunikat BRAK ADS1115)"
+            config DM32_ADC_DEFAULT_AUTO
+                bool "ADS1115, a gdy go brak - wbudowany ADC"
+            config DM32_ADC_DEFAULT_INT
+                bool "Tylko wbudowany ADC"
+        endchoice
+
+        config DM32_ADC_FWD_GPIO
+            int "Wbudowany ADC: GPIO kanalu FWD (ADC1: ESP32 GPIO32-39, C6 GPIO0-6)"
+            range 0 48
+            default 34 if IDF_TARGET_ESP32
+            default 2
+        config DM32_ADC_REF_GPIO
+            int "Wbudowany ADC: GPIO kanalu REF (ADC1: ESP32 GPIO32-39, C6 GPIO0-6)"
+            range 0 48
+            default 35 if IDF_TARGET_ESP32
+            default 3
+
+        config DM32_I2C_SDA
+            int "ADS1115: GPIO SDA"
+            default 21 if IDF_TARGET_ESP32
+            default 6
+        config DM32_I2C_SCL
+            int "ADS1115: GPIO SCL"
+            default 22 if IDF_TARGET_ESP32
+            default 7
+        config DM32_ADS1115_ADDR
+            hex "ADS1115: adres I2C"
+            default 0x48
+        config DM32_ADS_FWD_CH
+            int "ADS1115: wejscie FWD (A0-A3)"
+            range 0 3
+            default 0
+        config DM32_ADS_REF_CH
+            int "ADS1115: wejscie REF (A0-A3)"
+            range 0 3
+            default 1
+
+        config DM32_DIV_R_TOP
+            int "Dzielnik wejsciowy: rezystor gorny R11/R21 [om]"
+            default 1000000
+        config DM32_DIV_R_BOT
+            int "Dzielnik wejsciowy: rezystor dolny R12/R22 [om]"
+            default 318500
+            help
+                Rzeczywista wartosc dolnego rezystora dzielnika. U SP2KMO:
+                300 k + 18,5 k = ok. 318,5 k. Sluzy tylko do przeliczenia
+                fabrycznej kalibracji (napiecia mierzone multimetrem na
+                przewodach sprzegacza) na napiecia na wejsciu ADS1115.
+
+        config DM32_DEFAULT_CAL
+            bool "Fabryczna kalibracja z pomiarow SP2KMO (IC-7000, 2026-11-01)"
+            default y
+            help
+                Profil 1 "KF 80-6m": krzywa z 40 m (5/10/25/50/100 W).
+                Profil 2 "160m": krzywa z 40 m przeskalowana wg punktu 10 W
+                na 1,84 MHz (wstepnie - do sprawdzenia).
+                Profile 3 "2m" i 4 "P4": puste.
+
+        config DM32_DEFAULT_FS_MV
+            int "Bez kalibracji: napiecie na ADC przy pelnej skali [mV]"
+            default 2140
+        config DM32_DEFAULT_FS_W
+            int "Bez kalibracji: moc przy pelnej skali [W]"
+            default 100
+    endmenu
+
+    menu "Sterowanie"
+        config DM32_BUTTON_GPIO
+            int "GPIO przycisku (krotko: AVG/PEP, dlugo: profil)"
+            default 27 if IDF_TARGET_ESP32
+            default 9
+        config DM32_ALARM_GPIO
+            int "GPIO wyjscia alarmu SWR (-1 = wylaczone)"
+            range -1 48
+            default 26 if IDF_TARGET_ESP32
+            default 10
+
+        config DM32_RGB_ENABLE
+            bool "Dioda RGB stanu (zielony=gotowosc, czerwony=nadawanie, niebieski=brak ADS)"
+            default y if IDF_TARGET_ESP32
+            default n
+        config DM32_RGB_PIN_R
+            int "Dioda RGB: GPIO czerwony"
+            depends on DM32_RGB_ENABLE
+            default 25 if IDF_TARGET_ESP32
+            default 0
+        config DM32_RGB_PIN_G
+            int "Dioda RGB: GPIO zielony"
+            depends on DM32_RGB_ENABLE
+            default 32 if IDF_TARGET_ESP32
+            default 1
+        config DM32_RGB_PIN_B
+            int "Dioda RGB: GPIO niebieski"
+            depends on DM32_RGB_ENABLE
+            default 13 if IDF_TARGET_ESP32
+            default 11
+        config DM32_RGB_COMMON_ANODE
+            bool "Dioda RGB ze wspolna anoda (wspolna nozka do +3,3 V)"
+            depends on DM32_RGB_ENABLE
+            default n
+        config DM32_RGB_BRIGHTNESS
+            int "Dioda RGB: jasnosc [%]"
+            depends on DM32_RGB_ENABLE
+            range 5 100
+            default 60
+    endmenu
+
+endmenu

@@ -1,0 +1,30 @@
+idf_component_register(
+    SRCS
+        "main.c"
+        "app_config.c"
+        "calib.c"
+        "meas.c"
+        "meas_adc_internal.c"
+        "meas_ads1115.c"
+        "lcd_ili948x.c"
+        "display.c"
+        "ui.c"
+        "button.c"
+        "status_led.c"
+        "console_cmds.c"
+        "fonts/font_seg_90.c"
+        "fonts/font_seg_60.c"
+        "fonts/font_lbl_15.c"
+        "fonts/font_val_22.c"
+    INCLUDE_DIRS "."
+    REQUIRES
+        esp_lcd
+        esp_adc
+        esp_timer
+        esp_driver_spi
+        esp_driver_i2c
+        esp_driver_gpio
+        esp_driver_ledc
+        nvs_flash
+        console
+)

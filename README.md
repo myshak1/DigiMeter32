@@ -18,12 +18,35 @@ display. The meter's analog needle keeps working unchanged.
 | [`docs/schematic.svg`](docs/schematic.svg) | the same as vector graphics |
 | [`docs/schematic.png`](docs/schematic.png) | preview |
 | [`docs/schematic.py`](docs/schematic.py) | schematic source (Python + [schemdraw](https://schemdraw.readthedocs.io)) |
+| [`docs/screen.png`](docs/screen.png) | screen preview |
+| [`firmware/`](firmware/) | ESP32 firmware (ESP-IDF) |
 
 To regenerate the schematic:
 
 ```
 pip install schemdraw matplotlib
 python3 docs/schematic.py schematic svg      # or: schematic pdf, schematic png
+```
+
+## Firmware
+
+ESP-IDF 5.5 + LVGL 9, in [`firmware/`](firmware/) — build, screen, calibration
+and console commands are described in [`firmware/README.md`](firmware/README.md) (Polish).
+
+![Screen: transmitting 100 W into a dummy load](docs/screen.png)
+
+- Measurement via ADS1115 only; if it is missing, the screen shows **ADC ERR**
+  and the firmware keeps retrying every second.
+- Built-in calibration from the author's measurements (HF 80–6 m, 160 m) and
+  4 calibration profiles; any band can be calibrated with one known power
+  point (`profile copy`, `cal scale`).
+- Button: short — AVG/PEP, long — next profile. RGB LED: green — standby,
+  red — transmitting, blue — ADS1115 missing.
+
+```
+cd firmware
+idf.py set-target esp32
+idf.py build flash monitor
 ```
 
 ## Construction — two parts

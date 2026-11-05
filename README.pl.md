@@ -18,12 +18,35 @@ Analogowa wskazówka miernika działa dalej bez zmian.
 | [`docs/schematic.svg`](docs/schematic.svg) | to samo w grafice wektorowej |
 | [`docs/schematic.png`](docs/schematic.png) | podgląd |
 | [`docs/schematic.py`](docs/schematic.py) | źródło schematu (Python + [schemdraw](https://schemdraw.readthedocs.io)) |
+| [`docs/screen.png`](docs/screen.png) | podgląd ekranu |
+| [`firmware/`](firmware/) | firmware ESP32 (ESP-IDF) |
 
 Ponowne wygenerowanie schematu:
 
 ```
 pip install schemdraw matplotlib
 python3 docs/schematic.py schematic svg      # albo: schematic pdf, schematic png
+```
+
+## Firmware
+
+ESP-IDF 5.5 + LVGL 9, w katalogu [`firmware/`](firmware/) — kompilacja,
+ekran, kalibracja i polecenia konsoli opisane są w [`firmware/README.md`](firmware/README.md).
+
+![Ekran: nadawanie 100 W na sztuczne obciążenie](docs/screen.png)
+
+- Pomiar wyłącznie przez ADS1115; gdy go brak, na ekranie świeci **ADC ERR**,
+  a firmware co sekundę ponawia wykrywanie.
+- Wbudowana kalibracja z pomiarów autora (KF 80–6 m, 160 m) i 4 profile
+  kalibracji; każde pasmo można skalibrować jednym punktem znanej mocy
+  (`profile copy`, `cal scale`).
+- Przycisk: krótko — AVG/PEP, długo — następny profil. Dioda RGB: zielony —
+  gotowość, czerwony — nadawanie, niebieski — brak ADS1115.
+
+```
+cd firmware
+idf.py set-target esp32
+idf.py build flash monitor
 ```
 
 ## Budowa — dwie części

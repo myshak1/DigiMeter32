@@ -1,0 +1,2 @@
+# Konsola (kalibracja) na natywnym porcie USB ESP32-C6
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
