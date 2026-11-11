@@ -13,7 +13,6 @@
 #include "ui.h"
 #include "meas.h"
 #include "button.h"
-#include "status_led.h"
 #include "console_cmds.h"
 
 static const char *TAG = "main";
@@ -43,7 +42,6 @@ void app_main(void)
         ESP_LOGE(TAG, "pomiar nie wystartowal: %s", esp_err_to_name(err));
     }
     button_start();
-    status_led_start();
 
     ESP_LOGI(TAG, "gotowe - wpisz 'help' w konsoli");
     ESP_ERROR_CHECK(console_start());

@@ -297,8 +297,8 @@ with schemdraw.Drawing(show=False) as d:
                            None, None, ("GPIO21", "D21", "PSDA"),
                            ("GPIO22", "D22", "PSCL"), ("GPIO26", "D26", "PALM"), ("GPIO27", "D27", "PBTN")], 9)
         + pins("right", [("GPIO18", "D18", "SCK"), ("GPIO23", "D23", "MOSI"), ("GPIO5", "D5", "CS"),
-                         ("GPIO33", "D33", "DC"), ("GPIO4", "D4", "RST"), ("GPIO25", "D25", "LR"),
-                         ("GPIO32", "D32", "LG"), ("GPIO13", "D13", "LB"), ("GND", "GND", "GNDR")], 9),
+                         ("GPIO33", "D33", "DC"), ("GPIO4", "D4", "RST"), ("GPIO25", "D25", "PMODE"),
+                         None, None, ("GND", "GND", "GNDR")], 9),
         leadlen=1.4).at((AX2, -9.5)).anchor("V33").label("U4", loc="bottom", fontsize=FS*11))
     tag(d, esp.V33, "+3V3", "left")
     tag(d, esp.V5, "+5V", "left")
@@ -310,9 +310,7 @@ with schemdraw.Drawing(show=False) as d:
     tag(d, esp.PBTN, "BUTTON", "left")
     d.add(elm.Line().right(0.6).at(esp.GNDR))
     gnd(d, d.here)
-    tag(d, esp.LR, "RGB_R", "right")
-    tag(d, esp.LG, "RGB_G", "right")
-    tag(d, esp.LB, "RGB_B", "right")
+    tag(d, esp.PMODE, "AVG_PEP", "right")
 
     # ------------------------------------------------------------ LCD
     LX = esp.SCK[0] + 6.0
@@ -367,33 +365,18 @@ with schemdraw.Drawing(show=False) as d:
     d.add(elm.Resistor().down(2.0).at(gg.center).label("R42\n10 kΩ", loc="bottom", fontsize=FS*10))
     gnd(d, d.here)
 
-    # ------------------------------------------------------------ DIODA RGB
+    # ------------------------------------------------------------ PRZELACZNIK AVG/PEP
     RX0, RY0 = 69.0, -34.0
-    d.add(elm.Label().at((RX0 - 4.5, -30.6)).label("7. RGB status LED", fontsize=FS*14, halign="left"))
-    xc = RX0 + 6.4                                   # wspolna katoda
-    rows = (("RGB_R", "R51  150 Ω", "R (red)"),
-            ("RGB_G", "R52  47 Ω", "G (green)"),
-            ("RGB_B", "R53  47 Ω", "B (blue)"))
-    ys = []
-    for i, (net, rlab, llab) in enumerate(rows):
-        y = RY0 - 1.9 * i
-        ys.append(y)
-        tag(d, (RX0, y), net, "left")
-        d.add(elm.Resistor().at((RX0, y)).right(2.6).label(rlab, fontsize=FS*9))
-        d.add(elm.LED().right(1.8))
-        d.add(elm.Line().tox(xc))
-        d.add(elm.Dot())
-    d.add(elm.Line().at((xc, ys[0])).toy(ys[-1] - 1.0))
+    d.add(elm.Label().at((RX0 - 4.5, -30.6)).label("7. AVG/PEP switch", fontsize=FS*14, halign="left"))
+    tag(d, (RX0, RY0), "AVG_PEP", "left")
+    d.add(elm.Line().right(0.8).at((RX0, RY0)))
+    d.add(elm.Switch().down(2.4).label("S2", loc="right", fontsize=FS*10))
     gnd(d, d.here)
-    bx0, bx1 = RX0 + 2.75, RX0 + 5.25
-    for a_, b_ in (((bx0, ys[0] + 0.9), (bx1, ys[0] + 0.9)), ((bx1, ys[0] + 0.9), (bx1, ys[-1] - 0.6)),
-                   ((bx1, ys[-1] - 0.6), (bx0, ys[-1] - 0.6)), ((bx0, ys[-1] - 0.6), (bx0, ys[0] + 0.9))):
-        d.add(elm.Line().at(a_).to(b_).color(GREY).linestyle(":"))
-    d.add(elm.Label().at((bx0, ys[0] + 1.0)).label("LED2 (RGB, common cathode)", fontsize=FS*9, halign="left", valign="bottom"))
-    note(d, (RX0 - 4.5, ys[-1] - 2.6),
-         "LED legs (from left): 1 R, 2 K (common), 3 G, 4 B.\n"
-         "Green = standby, red = transmitting,\n"
-         "blue = ADS1115 missing.", size=10)
+    note(d, (RX0 - 4.5, RY0 - 4.6),
+         "On/off toggle switch to GND, on D25\n"
+         "(internal pull-up, no resistor).\n"
+         "Closed = PEP, open = AVG\n"
+         "(can be reversed in menuconfig).", size=10)
 
     # ------------------------------------------------------------ PRZYCISK
     PX, PY = 86.5, -34.0
@@ -404,15 +387,15 @@ with schemdraw.Drawing(show=False) as d:
     gnd(d, d.here)
     note(d, (PX - 3.5, PY - 4.6),
          "Momentary (NO), on D27.\n"
-         "Short: AVG/PEP,\n"
-         "long (>0.8 s): profile.", size=10)
+         "Long press (>0.8 s):\n"
+         "next calibration profile.", size=10)
 
     # ------------------------------------------------------------ STOPKA
     note(d, (-4.2, -46.0),
          "Pins as in the DigiMeter32 firmware (menuconfig, target esp32):\n"
          "LCD SCK=D18, MOSI=D23, CS=D5, DC=D33, RST=D4 (VSPI), backlight always on;\n"
          "I²C to ADS1115 SDA=D21, SCL=D22; button D27; alarm D26;\n"
-         "RGB LED R=D25, G=D32, B=D13.\n"
+         "AVG/PEP switch D25. Transmit (TX) is shown on the screen.\n"
          "Measurement via ADS1115 only — if it does not respond, the screen shows an ADS1115 error.\n"
          "Nets with the same name (flags) are connected. THT parts, ready-made modules.",
          size=10)
@@ -434,10 +417,10 @@ with schemdraw.Drawing(show=False) as d:
          "Digital power and SWR readout for an analog reflectometer (ESP32 + ADS1115 + LCD 4\")", vsize=10)
     ty -= 2.0
     cell(TX0, ty, TX0 + 23.0, ty - 2.0, "Drawn by", "Kris SP2KMO", vsize=12)
-    cell(TX0 + 23.0, ty, TX1, ty - 2.0, "Date", "2026-11-04", vsize=12)
+    cell(TX0 + 23.0, ty, TX1, ty - 2.0, "Date", "2026-11-11", vsize=12)
     ty -= 2.0
     w = (TX1 - TX0) / 3
-    cell(TX0, ty, TX0 + w, ty - 2.0, "Revision", "1.1", vsize=12)
+    cell(TX0, ty, TX0 + w, ty - 2.0, "Revision", "1.2", vsize=12)
     cell(TX0 + w, ty, TX0 + 2 * w, ty - 2.0, "Sheet", "1 / 1", vsize=12)
     cell(TX0 + 2 * w, ty, TX1, ty - 2.0, "Format", "A3", vsize=12)
     ty -= 2.0
@@ -453,7 +436,8 @@ with schemdraw.Drawing(show=False) as d:
     for i in range(4):
         cell(cols[i], hy, cols[i + 1], hy - 1.4, None, heads[i], vsize=8)
     rows = (("1.0", "2026-10-31", "First release", "SP2KMO"),
-            ("1.1", "2026-11-04", "Named DigiMeter32; R12/R22 318 kΩ; English", "SP2KMO"))
+            ("1.1", "2026-11-04", "Named DigiMeter32; R12/R22 318 kΩ; English", "SP2KMO"),
+            ("1.2", "2026-11-11", "RGB LED removed; AVG/PEP switch S2", "SP2KMO"))
     for k, row in enumerate(rows):
         y0 = hy - 1.4 - 1.6 * k
         for i in range(4):

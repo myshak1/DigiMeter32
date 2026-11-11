@@ -155,7 +155,7 @@ menu "DigiMeter32"
 
     menu "Sterowanie"
         config DM32_BUTTON_GPIO
-            int "GPIO przycisku (krotko: AVG/PEP, dlugo: profil)"
+            int "GPIO przycisku (dlugo: nastepny profil)"
             default 27 if IDF_TARGET_ESP32
             default 9
         config DM32_ALARM_GPIO
@@ -164,34 +164,19 @@ menu "DigiMeter32"
             default 26 if IDF_TARGET_ESP32
             default 10
 
-        config DM32_RGB_ENABLE
-            bool "Dioda RGB stanu (zielony=gotowosc, czerwony=nadawanie, niebieski=brak ADS)"
-            default y if IDF_TARGET_ESP32
-            default n
-        config DM32_RGB_PIN_R
-            int "Dioda RGB: GPIO czerwony"
-            depends on DM32_RGB_ENABLE
+        config DM32_MODE_SW_GPIO
+            int "GPIO przelacznika AVG/PEP (-1 = brak, tryb z przycisku/konsoli)"
+            range -1 48
             default 25 if IDF_TARGET_ESP32
-            default 0
-        config DM32_RGB_PIN_G
-            int "Dioda RGB: GPIO zielony"
-            depends on DM32_RGB_ENABLE
-            default 32 if IDF_TARGET_ESP32
-            default 1
-        config DM32_RGB_PIN_B
-            int "Dioda RGB: GPIO niebieski"
-            depends on DM32_RGB_ENABLE
-            default 13 if IDF_TARGET_ESP32
             default 11
-        config DM32_RGB_COMMON_ANODE
-            bool "Dioda RGB ze wspolna anoda (wspolna nozka do +3,3 V)"
-            depends on DM32_RGB_ENABLE
-            default n
-        config DM32_RGB_BRIGHTNESS
-            int "Dioda RGB: jasnosc [%]"
-            depends on DM32_RGB_ENABLE
-            range 5 100
-            default 60
+            help
+                Zwykly przelacznik wlacz/wylacz miedzy tym pinem a masa
+                (podciaganie wewnetrzne). Gdy jest ustawiony, tryb AVG/PEP
+                zalezy tylko od przelacznika.
+        config DM32_MODE_SW_CLOSED_PEP
+            bool "Przelacznik zwarty do masy = PEP (wylacz: zwarty = AVG)"
+            depends on DM32_MODE_SW_GPIO >= 0
+            default y
     endmenu
 
 endmenu

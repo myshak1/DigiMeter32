@@ -40,8 +40,9 @@ ekran, kalibracja i polecenia konsoli opisane są w [`firmware/README.md`](firmw
 - Wbudowana kalibracja z pomiarów autora (KF 80–6 m, 160 m) i 4 profile
   kalibracji; każde pasmo można skalibrować jednym punktem znanej mocy
   (`profile copy`, `cal scale`).
-- Przycisk: krótko — AVG/PEP, długo — następny profil. Dioda RGB: zielony —
-  gotowość, czerwony — nadawanie, niebieski — brak ADS1115.
+- AVG/PEP wybiera przełącznik włącz/wyłącz (D25 do masy: zwarty = PEP).
+  Przycisk chwilowy: długo — następny profil. Nadawanie widać jako **TX**
+  w prawym górnym rogu ekranu.
 
 ```
 cd firmware
@@ -55,7 +56,7 @@ idf.py build flash monitor
 Analogowe sygnały FWD/REF nie wychodzą poza metalową obudowę miernika.
 
 **B. Przy wyświetlaczu (z tyłu panelu LCD):** przetwornica R-78E5.0-0.5,
-ESP32-WROOM-32D (DevKit), LCD, przycisk, dioda RGB stanu, opcjonalny alarm SWR i złącze X2.
+ESP32-WROOM-32D (DevKit), LCD, przycisk, przełącznik AVG/PEP, opcjonalny alarm SWR i złącze X2.
 
 Przewód X1–X2 (5 żył, ekran do masy tylko po stronie miernika):
 
@@ -101,8 +102,7 @@ R14 470 Ω / C12 10 nF → ADS1115 (FWD → A0, REF → A1, A2/A3 do masy).
 | C5 | 100 nF ceramiczny (przy U1) | 1 |
 | D1, D2 | 1N5819 | 2 |
 | S1 | przycisk chwilowy NO (z podświetleniem — opcja) | 1 |
-| LED2 | dioda RGB 5 mm, wspólna katoda | 1 |
-| R51 / R52, R53 | 150 Ω / 47 Ω | 1 / 2 |
+| S2 | przełącznik włącz/wyłącz (SPST) — AVG/PEP | 1 |
 | Q2, D3, R41–R43, LED1, BZ1 | alarm SWR: BC337, 1N4148, 1 kΩ, 10 kΩ, 330 Ω, LED, buzzer 5 V — opcja | 1 kpl. |
 
 ## Połączenia ESP32-WROOM-32D
@@ -112,12 +112,12 @@ R14 470 Ω / C12 10 nF → ADS1115 (FWD → A0, REF → A1, A2/A3 do masy).
 | LCD SCK / SDI (MOSI) / CS / DC / RESET | D18 / D23 / D5 / D33 / D4 |
 | LCD LED | 3V3 na stałe |
 | ADS1115 SDA / SCL | D21 / D22 |
-| Przycisk (do GND) | D27 — krótko: AVG/PEP, długo: profil |
+| Przycisk S1 (do GND) | D27 — długo: następny profil |
 | Alarm SWR (opcja) | D26 |
-| Dioda RGB R / G / B | D25 / D32 / D13 |
+| Przełącznik AVG/PEP S2 (do GND) | D25 — zwarty: PEP, rozwarty: AVG |
 | Zasilanie 5 V z R-78E | VIN (przez D2) |
 
-Dioda RGB: zielony — gotowość, czerwony — nadawanie, niebieski — brak ADS1115.
+Nadawanie i błędy widać na ekranie (**TX**, **ADC ERR**); dioda stanu nie jest używana.
 
 ## Uwagi z pomiarów
 
@@ -129,4 +129,4 @@ pasmach, nie przeróbki, bo bufor jest za detektorami, poza torem w.cz.
 
 ## Autor
 
-Kris SP2KMO · rewizja schematu 1.1 (2026-11-04)
+Kris SP2KMO · rewizja schematu 1.2 (2026-11-11)

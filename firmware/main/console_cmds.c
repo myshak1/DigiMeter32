@@ -15,6 +15,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "app_config.h"
+#include "button.h"
 #include "calib.h"
 #include "meas.h"
 #include "lcd_ili948x.h"
@@ -281,7 +282,8 @@ static int cmd_profile(int argc, char **argv)
 /* ---------------- set ---------------- */
 static void print_settings(const app_config_t *c)
 {
-    printf("mode   %s\n", c->pep_mode ? "pep" : "avg");
+    printf("mode   %s%s\n", c->pep_mode ? "pep" : "avg",
+           button_mode_switch_present() ? "  (przelacznik)" : "");
     printf("minpwr %.2f W\n", c->min_power_w);
     printf("alarm  %.2f\n", c->alarm_swr);
     printf("hold   %u ms\n", c->hold_ms);
@@ -323,6 +325,10 @@ static int cmd_set(int argc, char **argv)
     int m = -1;
     bool known = true, valid = true;
     if (!strcasecmp(k, "mode")) {
+        if (button_mode_switch_present()) {
+            printf("Tryb AVG/PEP ustawia przelacznik (GPIO%d).\n", CONFIG_DM32_MODE_SW_GPIO);
+            return 1;
+        }
         m = !strcasecmp(argv[2], "pep") ? 1 : !strcasecmp(argv[2], "avg") ? 0 : -1;
         valid = m >= 0;
     } else if (!strcasecmp(k, "minpwr")) {

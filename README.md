@@ -40,8 +40,9 @@ and console commands are described in [`firmware/README.md`](firmware/README.md)
 - Built-in calibration from the author's measurements (HF 80–6 m, 160 m) and
   4 calibration profiles; any band can be calibrated with one known power
   point (`profile copy`, `cal scale`).
-- Button: short — AVG/PEP, long — next profile. RGB LED: green — standby,
-  red — transmitting, blue — ADS1115 missing.
+- AVG/PEP selected with an on/off toggle switch (D25 to GND: closed = PEP).
+  Momentary button: long press — next profile. Transmitting is shown as **TX**
+  in the top-right corner of the screen.
 
 ```
 cd firmware
@@ -55,7 +56,7 @@ idf.py build flash monitor
 and connector X1. The analog FWD/REF signals never leave the metal case.
 
 **B. At the display (on the back of the LCD panel):** R-78E5.0-0.5 converter,
-ESP32-WROOM-32D (DevKit), LCD, button, RGB status LED, optional SWR alarm and
+ESP32-WROOM-32D (DevKit), LCD, button, AVG/PEP switch, optional SWR alarm and
 connector X2.
 
 Cable X1–X2 (5 wires, shield grounded at the meter side only):
@@ -104,8 +105,7 @@ R14 470 Ω / C12 10 nF → ADS1115 (FWD → A0, REF → A1, A2/A3 to ground).
 | C5 | 100 nF ceramic (at U1) | 1 |
 | D1, D2 | 1N5819 | 2 |
 | S1 | momentary NO push button (illuminated — optional) | 1 |
-| LED2 | 5 mm RGB LED, common cathode | 1 |
-| R51 / R52, R53 | 150 Ω / 47 Ω | 1 / 2 |
+| S2 | on/off toggle switch (SPST) — AVG/PEP | 1 |
 | Q2, D3, R41–R43, LED1, BZ1 | SWR alarm: BC337, 1N4148, 1 kΩ, 10 kΩ, 330 Ω, LED, 5 V buzzer — optional | 1 set |
 
 ## ESP32-WROOM-32D connections
@@ -115,12 +115,12 @@ R14 470 Ω / C12 10 nF → ADS1115 (FWD → A0, REF → A1, A2/A3 to ground).
 | LCD SCK / SDI (MOSI) / CS / DC / RESET | D18 / D23 / D5 / D33 / D4 |
 | LCD LED | 3V3, always on |
 | ADS1115 SDA / SCL | D21 / D22 |
-| Button (to GND) | D27 — short: AVG/PEP, long: profile |
+| Button S1 (to GND) | D27 — long press: next profile |
 | SWR alarm (optional) | D26 |
-| RGB LED R / G / B | D25 / D32 / D13 |
+| AVG/PEP switch S2 (to GND) | D25 — closed: PEP, open: AVG |
 | 5 V from R-78E | VIN (via D2) |
 
-RGB LED: green — standby, red — transmitting, blue — ADS1115 missing.
+Transmit and errors are shown on the screen (**TX**, **ADC ERR**); there is no status LED.
 
 ## Measurement notes
 
@@ -133,4 +133,4 @@ modification — the buffer sits after the detectors, outside the RF path.
 
 ## Author
 
-Kris SP2KMO · schematic revision 1.1 (2026-11-04)
+Kris SP2KMO · schematic revision 1.2 (2026-11-11)

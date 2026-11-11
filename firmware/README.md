@@ -29,12 +29,18 @@ Schemat, lista części i połączenia: [README projektu](../README.pl.md),
 Odczyty siedmiosegmentowe mają wygaszone segmenty w tle, jak w wyświetlaczu
 LCD przyrządu.
 
-**Przycisk** (D27, zewnętrzny do GND): krótko — AVG ↔ PEP; długo (> 0,8 s) —
-następny profil kalibracji (1 → 2 → 3 → 4 → 1). Profil i tryb zapisują się w pamięci.
+**Przełącznik AVG/PEP** (S2, zwykły włącz/wyłącz między D25 a masą,
+podciąganie wewnętrzne): **zwarty — PEP, rozwarty — AVG**. Odwrotne działanie
+ustawisz w `menuconfig` (*Przelacznik zwarty do masy = PEP*). Tryb czytany jest
+z przełącznika także przy starcie; `set mode` w konsoli jest wtedy wyłączone.
+Gdy w `menuconfig` ustawisz GPIO przełącznika na `-1`, AVG/PEP zmienia krótkie
+naciśnięcie przycisku, jak wcześniej.
 
-**Dioda RGB** (opcja, wspólna katoda; R → 150 Ω → D25, G → 47 Ω → D32,
-B → 47 Ω → D13): **zielony** — gotowość, **czerwony** — nadawanie,
-**niebieski** — brak ADS1115 albo brak danych z niego (np. przerwa w przewodzie X1–X2).
+**Przycisk** (S1, chwilowy, D27 do masy): długo (> 0,8 s) — następny profil
+kalibracji (1 → 2 → 3 → 4 → 1). Profil zapisuje się w pamięci.
+
+**Nadawanie** pokazuje napis **TX** z czerwoną lampką w prawym górnym rogu
+ekranu; brak ADS1115 — **ADC ERR**. Dioda stanu nie jest używana.
 
 ---
 
@@ -64,7 +70,7 @@ i Barlow Semi Condensed (obie na licencji SIL OFL 1.1).
 * **Pomiar** — źródło (domyślnie *tylko ADS1115*), piny I²C, adres, wejścia
   ADS1115, **dzielnik wejściowy** (R11 = 1 MΩ, R12 = 318,5 kΩ), fabryczna
   kalibracja, model przed kalibracją (2,14 V = 100 W).
-* **Sterowanie** — przycisk, wyjście alarmu, dioda RGB.
+* **Sterowanie** — przycisk, wyjście alarmu, przełącznik AVG/PEP (GPIO, odwrócenie działania).
 
 ### Pomiar przez ADS1115
 
@@ -189,7 +195,7 @@ Wynik `export` można wkleić z powrotem do konsoli.
 | `profile`, `profile <n>`, `profile <n> name X` | profile kalibracji |
 | `profile copy <z> <do>` | skopiuj kalibrację między profilami (nazwa docelowa zostaje) |
 | `set` | pokaż ustawienia |
-| `set mode avg\|pep` | tryb wyświetlania |
+| `set mode avg\|pep` | tryb wyświetlania (tylko bez przełącznika AVG/PEP) |
 | `set minpwr <W>` | próg wykrycia nadawania (domyślnie 0,5 W) |
 | `set alarm <SWR>` | próg alarmu (domyślnie 3,0) |
 | `set hold <ms>` | podtrzymanie wartości szczytowej (domyślnie 1500) |
@@ -230,7 +236,7 @@ i niespójne tabele kalibracji są zastępowane wartościami domyślnymi.
 
 ```
 main/
-  main.c                start: NVS, ekran, pomiar, przycisk, dioda RGB, konsola
+  main.c                start: NVS, ekran, pomiar, przycisk, konsola
   lcd_ili948x.c         sterownik SPI: ILI9488 / ILI9486 / ILI9486-RPi / ST7796S
   display.c             integracja LVGL (bufory, flush przez DMA, zadanie LVGL)
   ui.c                  ekran pomiarowy (odczyty 7-segmentowe)
@@ -241,7 +247,6 @@ main/
   calib.c               krzywa detektora, SWR, skalowanie krzywej
   app_config.c          ustawienia i kalibracja w NVS (z fabryczną kalibracją)
   console_cmds.c        polecenia konsoli
-  button.c              przycisk AVG/PEP i profil
-  status_led.c          dioda RGB stanu
+  button.c              przełącznik AVG/PEP i przycisk profilu
 tools/gen_lvgl_font.py  generator czcionek LVGL
 ```

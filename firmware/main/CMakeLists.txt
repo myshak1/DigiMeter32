@@ -10,7 +10,6 @@ idf_component_register(
         "display.c"
         "ui.c"
         "button.c"
-        "status_led.c"
         "console_cmds.c"
         "fonts/font_seg_90.c"
         "fonts/font_seg_60.c"
