@@ -20,3 +20,6 @@ CONFIG_LV_THEME_DEFAULT_DARK=y
 # Przerwanie SPI poza IRAM: callback LVGL nie musi byc w IRAM,
 # a zapis NVS (kalibracja) nie koliduje z transmisja do LCD.
 CONFIG_SPI_MASTER_ISR_IN_IRAM=n
+
+# Ekran zamontowany "do gory nogami" w obudowie - obrot o 180 stopni
+CONFIG_DM32_LCD_FLIP=y
